@@ -125,11 +125,11 @@ def create_interview_pdf(filename):
         'ScriptQuote',
         parent=styles['Normal'],
         fontName='Helvetica-Oblique',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12,
         textColor=colors.HexColor('#0F172A'),
-        leftIndent=10,
-        spaceAfter=6
+        leftIndent=6,
+        spaceAfter=4
     )
 
     code_style = ParagraphStyle(
@@ -170,56 +170,56 @@ def create_interview_pdf(filename):
     
     # ── COVER / TITLE SECTION ──────────────────────────────────────────────
     story.append(Paragraph("Small Language Model (SLM) from Scratch", title_style))
-    story.append(Paragraph("<b>Complete Interview Walkthrough Script, Deep-Dive & Technical Q&A Guide</b>", subtitle_style))
+    story.append(Paragraph("<b>The Interview Storyteller's Guide, Deep-Dive & Technical Q&A Guide</b>", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#2563EB'), spaceAfter=12))
     
-    # ── SECTION 1: 5-MINUTE INTERVIEW WALKTHROUGH SCRIPT ────────────────────
-    story.append(Paragraph("1. The 5-Minute Interview Walkthrough Script", h1_style))
-    story.append(Paragraph("When asked <i>'Walk me through your Small Language Model project'</i>, use this structured narrative flow to demonstrate low-level architectural control and hardware awareness.", body_style))
+    # ── SECTION 1: STORYTELLING INTERVIEW NARRATIVE ──────────────────────────
+    story.append(Paragraph("1. The 5-Act Interview Storytelling Script", h1_style))
+    story.append(Paragraph("Instead of listing folders or code files, tell this compelling <b>technical story</b> about purpose, data transformation, neural architecture, learning, and generation.", body_style))
     story.append(Spacer(1, 4))
 
-    steps_data = [
-        [Paragraph("<b>Phase & Time</b>", body_style), Paragraph("<b>What to Say (Exact Script)</b>", body_style), Paragraph("<b>Key Concept Highlighted</b>", body_style)],
+    acts_data = [
+        [Paragraph("<b>Act & Purpose</b>", body_style), Paragraph("<b>The Story script (What to Say)</b>", body_style), Paragraph("<b>Core Concept Highlighted</b>", body_style)],
         [
-            Paragraph("<b>Step 1: High-Level Hook</b><br/>(0:00 - 0:30)", body_style),
-            Paragraph("<i>'I built a ~10.8 Million parameter Small Language Model from scratch in PyTorch without high-level transformer libraries to master decoder-only LLM mechanics under the hood. It uses a context length of 256 tokens across 6 transformer blocks with 6 attention heads.'</i>", script_quote_style),
-            Paragraph("PyTorch control & architecture scale", body_style)
+            Paragraph("<b>Act I: Motivation</b><br/>('Why I Built This')", body_style),
+            Paragraph("<i>'Most developers use LLMs as black-box APIs. I wanted to understand how LLMs actually think and learn at the hardware and mathematical level. So I built a ~10.8M parameter decoder-only Transformer from scratch in PyTorch—implementing data cleaning, tokenization, causal attention math, AdamW training, and temperature sampling without high-level libraries.'</i>", script_quote_style),
+            Paragraph("Low-level PyTorch control beyond black-box APIs", body_style)
         ],
         [
-            Paragraph("<b>Step 2: Data Pipeline</b><br/>(0:30 - 1:30)", body_style),
-            Paragraph("<i>'In prepare.py, I implemented regex text normalization and character tokenization. To optimize memory I/O, I serialized tokens into uint16 binary files (train.bin/val.bin). Because vocab_size is 75, uint16 cuts RAM/disk transfer bandwidth by 75% compared to 64-bit tensors.'</i>", script_quote_style),
-            Paragraph("Hardware-conscious binary dataset optimization", body_style)
+            Paragraph("<b>Act II: Data Journey</b><br/>('Words to Binary')", body_style),
+            Paragraph("<i>'Neural networks only understand numbers. I built a regex data cleaner and character tokenization lookup (stoi/itos). To optimize hardware I/O, I serialized tokens into uint16 binary files. Since vocab is 75, uint16 cuts RAM and disk transfer bandwidth by 75% compared to standard 64-bit PyTorch tensors.'</i>", script_quote_style),
+            Paragraph("Character tokenization & uint16 binary compression (75% I/O saving)", body_style)
         ],
         [
-            Paragraph("<b>Step 3: Model Architecture</b><br/>(1:30 - 3:30)", body_style),
-            Paragraph("<i>'In model.py, token and positional embeddings are summed with dropout. Each block uses Pre-LayerNorm (x = x + Attn(LN(x))) for gradient stability. CausalSelfAttention computes Q, K, V in one projection and applies a lower-triangular -inf mask. I also added Weight Tying between token embeddings and the output head.'</i>", script_quote_style),
-            Paragraph("Pre-LN, Causal Masking, GELU & Weight Tying", body_style)
+            Paragraph("<b>Act III: Neural Mind</b><br/>('Transformer Engine')", body_style),
+            Paragraph("<i>'Token vectors (384-dim) are summed with positional embeddings because self-attention has no word order concept. Inside 6 Transformer layers, Causal Multi-Head Self-Attention uses a lower-triangular mask (-inf) so tokens cannot look ahead. I used Pre-LayerNorm for gradient stability and Weight Tying between embeddings and lm_head to save parameters.'</i>", script_quote_style),
+            Paragraph("Positional Embeddings, Causal Masking, Pre-LN & Weight Tying", body_style)
         ],
         [
-            Paragraph("<b>Step 4: Training Engine</b><br/>(3:30 - 4:30)", body_style),
-            Paragraph("<i>'In train.py, batches are sampled using torch.randint from binary files. I trained with AdamW (lr=3e-4) over 5,000 steps, evaluating train/val loss every 500 steps under @torch.no_grad(), saving checkpoints to base_model.pt.'</i>", script_quote_style),
-            Paragraph("AdamW optimization & no_grad evaluation", body_style)
+            Paragraph("<b>Act IV: Learning</b><br/>('Noise to Speech')", body_style),
+            Paragraph("<i>'At first, 10.8M parameters output pure noise. We feed batches of 64 sequences (256 length) and compute Cross-Entropy Loss on next-character predictions. Using AdamW (lr=3e-4) over 5,000 iterations, the loss steadily drops—moving from random characters to words, grammar, and dramatic text.'</i>", script_quote_style),
+            Paragraph("AdamW optimization & loss convergence over 5,000 steps", body_style)
         ],
         [
-            Paragraph("<b>Step 5: Generation & Vision</b><br/>(4:30 - 5:00)", body_style),
-            Paragraph("<i>'In generate.py, text generation crops prompts to 256 tokens, applies temperature scaling (logits / T), and samples via torch.multinomial. Next, I plan to upgrade to FlashAttention 2 and Top-P (nucleus) sampling.'</i>", script_quote_style),
-            Paragraph("Temperature sampling & production roadmap", body_style)
+            Paragraph("<b>Act V: The Voice</b><br/>('Inference & Future')", body_style),
+            Paragraph("<i>'To generate text, seed prompts are fed autoregressively. Temperature Scaling (logits/T) controls output creativity before multinomial sampling. Looking ahead, I plan to upgrade to FlashAttention 2 for GPU kernel acceleration, Rotary Position Embeddings (RoPE), and Top-P (nucleus) sampling.'</i>", script_quote_style),
+            Paragraph("Temperature sampling & production roadmap (FlashAttention/RoPE)", body_style)
         ]
     ]
 
-    walkthrough_table = Table(steps_data, colWidths=[90, 294, 120])
-    walkthrough_table.setStyle(TableStyle([
+    story_table = Table(acts_data, colWidths=[100, 284, 120])
+    story_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F1F5F9')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor('#0F172A')),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING', (0,0), (-1,-1), 5),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-        ('LEFTPADDING', (0,0), (-1,-1), 6),
-        ('RIGHTPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('LEFTPADDING', (0,0), (-1,-1), 5),
+        ('RIGHTPADDING', (0,0), (-1,-1), 5),
     ]))
-    story.append(walkthrough_table)
-    story.append(Spacer(1, 10))
+    story.append(story_table)
+    story.append(Spacer(1, 8))
 
     # ── SECTION 2: ARCHITECTURAL OVERVIEW & SPECS ──────────────────────────
     story.append(Paragraph("2. Architectural Overview & Specifications", h1_style))
