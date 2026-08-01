@@ -22,6 +22,55 @@ A custom ~10.8M parameter **Decoder-only Transformer** (nanoGPT-style) implement
 
 ---
 
+## 📐 System & Model Architecture Diagram
+
+```mermaid
+flowchart TD
+    subgraph Data Pipeline ["1. Data Pipeline (prepare.py)"]
+        RawText["Raw Text Corpus (data/input.txt)"] --> Preprocess["Text Normalization & Regex Cleaning"]
+        Preprocess --> CharTokenizer["Character-Level Tokenizer (stoi / itos)"]
+        CharTokenizer --> EncodedData["uint16 Token Array Serialization"]
+        EncodedData --> SplitData["Train / Validation Split (90% / 10%)"]
+        SplitData --> TrainBin["data/train.bin"]
+        SplitData --> ValBin["data/val.bin"]
+    end
+
+    subgraph Training & Model Architecture ["2. Model Architecture & Forward Pass (model.py & train.py)"]
+        InputTokens["Batch Token IDs [B, T]"] --> TokEmb["Token Embedding (vocab_size=75, n_embd=384)"]
+        PosIndices["Position Indices [0..T-1]"] --> PosEmb["Position Embedding (block_size=256, n_embd=384)"]
+        TokEmb --> AddEmb["Sum Embeddings + Dropout"]
+        PosEmb --> AddEmb
+        
+        AddEmb --> BlockList["Transformer Stack (n_layer = 6 Blocks)"]
+        
+        subgraph TransformerBlock ["Transformer Block Structure (Block)"]
+            direction TB
+            InputX["Input Tensor [B, T, 384]"] --> LN1["LayerNorm 1"]
+            LN1 --> MultiHeadAttn["Causal Self-Attention (6 Heads)\n[Q, K, V Projections + Triangular Mask]"]
+            MultiHeadAttn --> Resid1["Residual Connection (+ InputX)"]
+            Resid1 --> LN2["LayerNorm 2"]
+            LN2 --> FFN["Feed-Forward Network\n[Linear(384 -> 1536) -> GELU -> Linear(1536 -> 384)]"]
+            FFN --> Resid2["Residual Connection (+ Resid1)"]
+        end
+        
+        BlockList --> FinalLN["Final LayerNorm (ln_f)"]
+        FinalLN --> LMHead["Linear Output Head (lm_head)\n[Weight Tying with tok_emb]"]
+        LMHead --> Logits["Logits [B, T, vocab_size]"]
+        Logits --> LossCalc["Cross Entropy Loss Optimization"]
+    end
+
+    subgraph Inference Engine ["3. Inference Engine (generate.py)"]
+        Prompt["Input Prompt String (e.g., 'ROMEO:')"] --> EncodePrompt["Encode to Token IDs"]
+        EncodePrompt --> CondTokens["Crop to Context Window (block_size=256)"]
+        CondTokens --> ForwardPass["Model Forward Pass"]
+        ForwardPass --> TempScale["Temperature Scaling & Softmax"]
+        TempScale --> Sample["Multinomial Probability Sampling"]
+        Sample --> DecodeText["Decode Token ID to Character & Append"]
+    end
+```
+
+---
+
 ## 🏗️ Model & Training Specifications
 
 | Parameter | Value |
