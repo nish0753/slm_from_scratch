@@ -12,6 +12,12 @@ ENV/
 data/*.bin
 checkpoints/
 
+# Personal Interview Notes & PDF Guides
+walkthrough.md
+*.pdf
+build_pdf.py
+
+
 # System / IDE
 .DS_Store
 .vscode/
